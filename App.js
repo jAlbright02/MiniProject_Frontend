@@ -8,6 +8,7 @@ import { AppProvider } from './app/AppContext';
 import HomeScreen from './app/HomeScreen';
 import AddItemScreen from './app/AddItemScreen';
 import * as Device from 'expo-device';
+import ImgPicker from './app/ImgPicker.js';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -102,6 +103,11 @@ export default function App() {
             name="AddItem" 
             component={AddItemScreen} 
             options={{ title: 'Add New Item' }}
+          />
+          <Stack.Screen 
+            name="AddImage" 
+            component={ImgPicker} 
+            options={{ title: 'Add New Image' }}
           />
         </Stack.Navigator>
       </NavigationContainer>

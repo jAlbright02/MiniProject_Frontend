@@ -1,8 +1,9 @@
 import React, { useContext, useEffect } from 'react';
 import { 
   StyleSheet, 
-  Text, 
-  View, 
+  Text,
+  View,
+  Image,
   FlatList, 
   TouchableOpacity, 
   SafeAreaView, 
@@ -15,7 +16,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
-  const { items, itemCount, loadItems, deleteItem } = useContext(AppContext);
+  const { posts, postCount, loadItems, deleteItem } = useContext(AppContext);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -45,25 +46,33 @@ const HomeScreen = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Items List</Text>
+          <Text style={styles.headerTitle}>Posts</Text>
           <View style={styles.countContainer}>
-            <Text style={styles.countText}>{itemCount} items</Text>
+            <Text style={styles.countText}>{postCount} posts</Text>
           </View>
         </View>
-        
         <FlatList
-          data={items}
-          keyExtractor={item => item.id.toString()}
+          data={posts}
+          keyExtractor={(item) => item.postId.toString()} // Ensure id is a string
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
               <View style={styles.itemInfo}>
-                <Text style={styles.itemTitle}>{item.name}</Text>
-                <Text>Price: ${item.price}</Text>
-                <Text>Description: {item.description}</Text>
+                <Text style={styles.itemTitle}>{item.content}</Text>
+                <Text>User: {item.user}</Text>
+                {item.image && Array.isArray(item.image) && item.image[0] ? (
+                  <Image 
+                    source={{ uri: item.image[0] }} 
+                    style={{ width: 100, height: 100 }} 
+                    onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
+                  />
+                ) : (
+                  <Text>No Image</Text> // Optional: Placeholder text if no image is available
+                )}
+
               </View>
               <TouchableOpacity 
                 style={styles.deleteButton}
-                onPress={() => deleteItem(item.id)} 
+                onPress={() => deleteItem(item.postId)} 
               >
                 <Text style={styles.buttonText}>Delete</Text>
               </TouchableOpacity>

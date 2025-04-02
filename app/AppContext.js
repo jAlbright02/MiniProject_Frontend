@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 
 export const AppContext = createContext();
 
-const awsURL = 'http://ec2-100-25-27-37.compute-1.amazonaws.com:3010' //aws endpoint
+const awsURL = 'https://b77e-193-1-57-1.ngrok-free.app'//'http://ec2-100-25-27-37.compute-1.amazonaws.com:3010' //aws endpoint
 let navigationRef = null;
 
 export function setNavigationRef(ref) {
@@ -19,8 +19,8 @@ export function navigate(name, params) {
 }
 
 export const AppProvider = ({ children }) => {
-  const [items, setItems] = useState([]);
-  const [itemCount, setItemCount] = useState(0);
+  const [posts, setPosts] = useState([]);
+  const [postCount, setPostCount] = useState(0);
 
   async function schedulePushNotification(title, message) {
     await Notifications.scheduleNotificationAsync({
@@ -45,12 +45,21 @@ export const AppProvider = ({ children }) => {
         }
       )
       const data = await res.json()
-      console.log(data)
-      if (data.Products && Array.isArray(data.Products)) {
-        setItems(data.Products)
-        setItemCount(data.Products.length)
+      console.log(data.posts)
+      if (data.posts && Array.isArray(data.posts)) {
+
+        //going to use expo-file-system to store the images locally, then store the 'id' of it
+        //into mongo on the backend hosted on aws
+        //how does that work? what happens when you reload the app? is it all saved?
+
+        //apparently it persists after a reload so it should be safe to use
+        //theres a concern about 'cleaning' images up after though, when you dont need them.
+        //I wonder if its fine for the demo, can just uninstall/reinstall after
+
+        setPosts(data.posts)
+        setPostCount(data.posts.length)
       } else {
-        console.log('No products found in API response')
+        console.log('No posts found in API response')
       }
     } catch (err) {
       console.log(err)
@@ -60,7 +69,7 @@ export const AppProvider = ({ children }) => {
   const deleteItem = async (id) => {
     try {
       const res = await fetch(
-        `${awsURL}/deleteSpecificProduct`,
+        `${awsURL}/deleteSpecificPost`,
         {
           method: 'POST',
           headers: {
@@ -86,10 +95,10 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const addItem = async (name, price, description) => {
+  const addItem = async (content, image) => {
     try {
       const res = await fetch(
-        `${awsURL}/addProduct`,
+        `${awsURL}/addPost`,
         {
           method: 'POST',
           headers: {
@@ -98,17 +107,17 @@ export const AppProvider = ({ children }) => {
           },
           body: JSON.stringify({
             id: uuidv4(),
-            name: name,
-            price: price,
-            description: description
+            content: content,
+            user: 'testUser123',
+            image: image
           }),
         }
       )
       const data = await res.json()
       if (data.success) {
         await schedulePushNotification(
-          'New Item Added',
-          `Successfully added "${name}" with price $${price}`
+          'New Post Added',
+          `Successfully added photo`
         );
         console.log('Product added successfully');
         navigate('Home');
@@ -118,16 +127,16 @@ export const AppProvider = ({ children }) => {
     } catch (err) {
       console.log(err)
       await schedulePushNotification(
-        'Error Adding Item',
-        `Failed to add item: ${err.message}`
+        'Error Adding Post',
+        `Failed to add Post: ${err.message}`
       );
     }
   };
 
   return (
     <AppContext.Provider value={{ 
-      items, 
-      itemCount, 
+      posts, 
+      postCount, 
       loadItems, 
       deleteItem, 
       addItem 
