@@ -53,7 +53,7 @@ const HomeScreen = ({ navigation }) => {
         </View>
         <FlatList
           data={posts}
-          keyExtractor={(item) => item.postId.toString()} // Ensure id is a string
+          keyExtractor={(item) => item.postId.toString()}
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
               <View style={styles.itemInfo}>
@@ -66,7 +66,7 @@ const HomeScreen = ({ navigation }) => {
                     onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
                   />
                 ) : (
-                  <Text>No Image</Text> // Optional: Placeholder text if no image is available
+                  <Text>No Image</Text>
                 )}
 
               </View>
