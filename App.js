@@ -9,6 +9,10 @@ import HomeScreen from './app/HomeScreen';
 import AddItemScreen from './app/AddItemScreen';
 import * as Device from 'expo-device';
 import ImgPicker from './app/ImgPicker.js';
+import ProfileScreen from './app/ProfileScreen';
+import LoginScreen from './app/LoginScreen';
+import RegisterScreen from './app/RegisterScreen';
+import EditPostScreen from './app/EditPostScreen';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -59,7 +63,6 @@ async function registerForPushNotificationsAsync() {
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-
   const navigationRef = React.useRef(null);
 
   useEffect(() => {
@@ -93,7 +96,17 @@ export default function App() {
         ref={(ref) => {
           setNavigationRef(ref);
         }}>
-        <Stack.Navigator>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen 
+            name="Login" 
+            component={LoginScreen} 
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen 
+            name="Register" 
+            component={RegisterScreen} 
+            options={{ headerShown: false }}
+          />
           <Stack.Screen 
             name="Home" 
             component={HomeScreen} 
@@ -102,7 +115,17 @@ export default function App() {
           <Stack.Screen 
             name="AddItem" 
             component={AddItemScreen} 
-            options={{ title: 'Add New Item' }}
+            options={{ title: 'Create Post' }}
+          />
+          <Stack.Screen 
+            name="EditPost" 
+            component={EditPostScreen} 
+            options={{ title: 'Edit Post' }}
+          />
+          <Stack.Screen 
+            name="Profile" 
+            component={ProfileScreen} 
+            options={{ title: 'My Profile' }}
           />
           <Stack.Screen 
             name="AddImage" 
