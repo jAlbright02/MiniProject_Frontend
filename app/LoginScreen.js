@@ -4,11 +4,12 @@ import { AppContext } from './AppContext';
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const { login } = useContext(AppContext);
 
   const handleLogin = async () => {
     if (username.trim()) {
-      const success = await login(username);
+      const success = await login(username, password);
       if (success) {
         navigation.replace('Home');
       }
@@ -22,6 +23,13 @@ const LoginScreen = ({ navigation }) => {
         placeholder="Enter username"
         value={username}
         onChangeText={setUsername}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Enter password"
+        value={password}
+        secureTextEntry={true} 
+        onChangeText={setPassword}
       />
       <Button title="Login" onPress={handleLogin} />
       <Button

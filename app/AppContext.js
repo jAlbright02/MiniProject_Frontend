@@ -8,7 +8,7 @@ export const AppContext = createContext();
 
 //Remember to change this to your ngrok endpoint
 //const awsURL = ''//'http://ec2-100-25-27-37.compute-1.amazonaws.com:3010' //aws endpoint
-const awsURL = 'https://ecf6-193-1-57-1.ngrok-free.app'
+const awsURL = 'https://350c-193-1-57-1.ngrok-free.app'
 
 let navigationRef = null;
 
@@ -52,7 +52,7 @@ export const AppProvider = ({ children }) => {
       )
       const data = await res.json()
       if (data.posts && Array.isArray(data.posts)) {
-        setPosts(data.posts)
+        setPosts(data.posts.slice().reverse())
         setPostCount(data.posts.length)
         
         // Filter posts for current user
@@ -152,9 +152,17 @@ export const AppProvider = ({ children }) => {
 
   const editPost = async (id, content) => {
     try {
-      // First, get the specific post
-      const res = await fetch(
-        `${awsURL}/getSpecificPost`,
+      //need to check if currentUser matches owner of post
+      if (!currentUser) {
+        await schedulePushNotification(
+          'Error Updating Post',
+          'You must be the owner to update the post'
+        );
+        return false;
+      }
+      
+      const addRes = await fetch(
+        `${awsURL}/updateCaption`,
         {
           method: 'POST',
           headers: {
@@ -162,52 +170,24 @@ export const AppProvider = ({ children }) => {
             "ngrok-skip-browser-warning": "69420"
           },
           body: JSON.stringify({
-            id: id,
+            postId: id,
+            content: content
           }),
         }
       );
-      
-      const data = await res.json();
-      
-      if (data.success && data.post) {
-        // Delete the old post
-        await deleteItem(id);
-        
-        // Create a new post with updated content but same ID
-        const addRes = await fetch(
-          `${awsURL}/addPost`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              "ngrok-skip-browser-warning": "69420"
-            },
-            body: JSON.stringify({
-              id: id,
-              content: content,
-              user: data.post.user,
-              image: data.post.image
-            }),
-          }
+      const addData = await addRes.json();
+
+      if (addData.success) {
+        await schedulePushNotification(
+          'Post Updated',
+          'Your post has been updated successfully'
         );
-        
-        const addData = await addRes.json();
-        
-        if (addData.success) {
-          await schedulePushNotification(
-            'Post Updated',
-            'Your post has been successfully updated'
-          );
-          loadItems();
-          return true;
-        }
+        loadItems();
+        return true;
       }
-      
-      return false;
-    } catch (err) {
-      console.log(err);
-      return false;
-    }
+      } catch (err) {
+
+      }
   };
 
   const likePost = async (id) => {
@@ -242,10 +222,9 @@ export const AppProvider = ({ children }) => {
         );
         return false;
       }
-
-      // First, get the specific post
-      const res = await fetch(
-        `${awsURL}/getSpecificPost`,
+      
+      const addRes = await fetch(
+        `${awsURL}/addComment`,
         {
           method: 'POST',
           headers: {
@@ -253,72 +232,83 @@ export const AppProvider = ({ children }) => {
             "ngrok-skip-browser-warning": "69420"
           },
           body: JSON.stringify({
-            id: id,
+            postId: id,
+            user: currentUser,
+            comment: commentText
           }),
         }
       );
-      
-      const data = await res.json();
-      
-      if (data.success && data.post) {
-        // Delete the old post
-        await deleteItem(id);
-        
-        // Prepare comments array
-        const comments = data.post.comments || [];
-        comments.push({
-          user: currentUser,
-          content: commentText,
-          timestamp: new Date()
-        });
-        
-        // Create a new post with added comment but same ID
-        const addRes = await fetch(
-          `${awsURL}/addPost`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              "ngrok-skip-browser-warning": "69420"
-            },
-            body: JSON.stringify({
-              id: id,
-              content: data.post.content,
-              user: data.post.user,
-              image: data.post.image,
-              likes: data.post.likes || 0,
-              comments: comments
-            }),
-          }
+      const addData = await addRes.json();
+
+      if (addData.success) {
+        await schedulePushNotification(
+          'Comment Added',
+          'Your comment has been added successfully'
         );
-        
-        const addData = await addRes.json();
-        
-        if (addData.success) {
-          await schedulePushNotification(
-            'Comment Added',
-            'Your comment has been added successfully'
-          );
-          loadItems();
-          return true;
-        }
+        loadItems();
+        return true;
       }
-      
-      return false;
-    } catch (err) {
-      console.log(err);
-      return false;
-    }
+      } catch (err) {
+
+      }
   };
 
-  const login = async (username) => {
-    try {
-      setCurrentUser(username);
+  const register = async (username, password) => {
+    const addRes = await fetch(
+      `${awsURL}/register`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          "ngrok-skip-browser-warning": "69420"
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password
+        }),
+      }
+    );
+    const addData = await addRes.json();
+    console.log(addData)
+
+    if (addData.success) {
+      setCurrentUser(username)
       await AsyncStorage.setItem('currentUser', username);
+      await schedulePushNotification(
+        'Registered',
+        'You have been successfully registered'
+      );
+      loadItems();
       return true;
-    } catch (err) {
-      console.log(err);
-      return false;
+    }
+  }
+  const login = async (username, password) => {
+    const addRes = await fetch(
+      `${awsURL}/login`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          "ngrok-skip-browser-warning": "69420"
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password
+        }),
+      }
+    );
+    const addData = await addRes.json();
+    console.log(addData)
+
+    if (addData.success) {
+      setCurrentUser(username)
+      await AsyncStorage.setItem('currentUser', username);
+      await schedulePushNotification(
+        'Logged In',
+        'You have been successfully logged in'
+      );
+      loadItems();
+      return true;
     }
   };
 
@@ -368,6 +358,7 @@ export const AppProvider = ({ children }) => {
       addComment,
       currentUser,
       login,
+      register,
       logout,
       userPosts
     }}>

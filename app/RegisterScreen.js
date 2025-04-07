@@ -5,13 +5,13 @@ import { AppContext } from './AppContext';
 const RegisterScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useContext(AppContext);
+  const { register } = useContext(AppContext);
 
   const handleRegister = async () => {
     if (username.trim() && password.trim()) {
       // In a real app, you'd send this to your backend
       // For now, we'll just log in the user
-      const success = await login(username);
+      const success = await register(username, password);
       if (success) {
         navigation.replace('Home');
       }

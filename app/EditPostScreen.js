@@ -15,6 +15,7 @@ const EditPostScreen = ({ route, navigation }) => {
   }, [postId, posts]);
 
   const handleSave = async () => {
+    console.log('heree')
     if (content.trim()) {
       const success = await editPost(postId, content);
       if (success) {
