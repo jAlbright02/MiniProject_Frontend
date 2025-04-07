@@ -230,6 +230,8 @@ const HomeScreen = ({ navigation }) => {
           position="center"
           color="#007bff"
           distanceToEdge={16}
+          floatingIcon={<Icon name="add" size={24} color="#fff" />}
+          showBackground={true}
         />
       </View>
     </SafeAreaView>
@@ -283,6 +285,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingBottom: 80, // Add padding to avoid content being hidden by FAB
   },
   postContainer: {
     backgroundColor: '#ffffff',

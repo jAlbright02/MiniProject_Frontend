@@ -10,8 +10,8 @@ import AddItemScreen from './app/AddItemScreen';
 import * as Device from 'expo-device';
 import ImgPicker from './app/ImgPicker.js';
 import ProfileScreen from './app/ProfileScreen';
-import LoginScreen from './app/LoginScreen';
-import RegisterScreen from './app/RegisterScreen';
+import LoginScreen from './auth/LoginScreen.js';
+import RegisterScreen from './auth/RegisterScreen.js';
 import EditPostScreen from './app/EditPostScreen';
 
 Notifications.setNotificationHandler({

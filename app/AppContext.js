@@ -1,4 +1,4 @@
-import 'react-native-get-random-values'
+import 'react-native-get-random-values';
 import React, { createContext, useState, useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,7 +8,7 @@ export const AppContext = createContext();
 
 //Remember to change this to your ngrok endpoint
 //const awsURL = ''//'http://ec2-100-25-27-37.compute-1.amazonaws.com:3010' //aws endpoint
-const awsURL = 'https://350c-193-1-57-1.ngrok-free.app'
+const awsURL = 'https://4c4f-2a02-8084-a0a0-2600-29cf-efbc-6462-ebc.ngrok-free.app';
 
 let navigationRef = null;
 
@@ -49,27 +49,42 @@ export const AppProvider = ({ children }) => {
             "ngrok-skip-browser-warning": "69420"
           },
         }
-      )
-      const data = await res.json()
+      );
+      const data = await res.json();
       if (data.posts && Array.isArray(data.posts)) {
-        setPosts(data.posts.slice().reverse())
-        setPostCount(data.posts.length)
+        // Sort posts with newest first
+        const sortedPosts = data.posts.slice().sort((a, b) => {
+          return new Date(b.timestamp) - new Date(a.timestamp);
+        });
+        
+        setPosts(sortedPosts);
+        setPostCount(data.posts.length);
         
         // Filter posts for current user
         if (currentUser) {
-          const filteredPosts = data.posts.filter(post => post.user === currentUser);
+          const filteredPosts = sortedPosts.filter(post => post.user === currentUser);
           setUserPosts(filteredPosts);
         }
       } else {
-        console.log('No posts found in API response')
+        console.log('No posts found in API response');
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
   };
 
   const deleteItem = async (id) => {
     try {
+      // Check if the current user owns the post
+      const postToDelete = posts.find(post => post.postId === id);
+      if (postToDelete && postToDelete.user !== currentUser) {
+        await schedulePushNotification(
+          'Permission Denied',
+          'You can only delete your own posts'
+        );
+        return false;
+      }
+      
       const res = await fetch(
         `${awsURL}/deleteSpecificPost`,
         {
@@ -82,9 +97,9 @@ export const AppProvider = ({ children }) => {
             id: id,
           }),
         }
-      )
+      );
       
-      const data = await res.json()
+      const data = await res.json();
       
       if (data.success) {
         console.log('Post deleted successfully');
@@ -93,11 +108,14 @@ export const AppProvider = ({ children }) => {
           'Your post has been successfully deleted'
         );
         loadItems();
+        return true;
       } else {
         console.log('Error occurred during delete');
+        return false;
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
+      return false;
     }
   };
 
@@ -126,8 +144,8 @@ export const AppProvider = ({ children }) => {
             image: image ? [image] : []
           }),
         }
-      )
-      const data = await res.json()
+      );
+      const data = await res.json();
       if (data.success) {
         await schedulePushNotification(
           'New Post Added',
@@ -141,7 +159,7 @@ export const AppProvider = ({ children }) => {
         return false;
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
       await schedulePushNotification(
         'Error Adding Post',
         `Failed to add Post: ${err.message}`
@@ -152,11 +170,12 @@ export const AppProvider = ({ children }) => {
 
   const editPost = async (id, content) => {
     try {
-      //need to check if currentUser matches owner of post
-      if (!currentUser) {
+      // Check if the current user owns the post
+      const postToEdit = posts.find(post => post.postId === id);
+      if (postToEdit && postToEdit.user !== currentUser) {
         await schedulePushNotification(
-          'Error Updating Post',
-          'You must be the owner to update the post'
+          'Permission Denied',
+          'You can only edit your own posts'
         );
         return false;
       }
@@ -176,7 +195,7 @@ export const AppProvider = ({ children }) => {
         }
       );
       const addData = await addRes.json();
-
+      
       if (addData.success) {
         await schedulePushNotification(
           'Post Updated',
@@ -184,32 +203,49 @@ export const AppProvider = ({ children }) => {
         );
         loadItems();
         return true;
+      } else {
+        return false;
       }
-      } catch (err) {
-
-      }
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
   };
 
   const likePost = async (id) => {
-    const addRes = await fetch(
-      `${awsURL}/addLike`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          "ngrok-skip-browser-warning": "69420"
-        },
-        body: JSON.stringify({
-          postId: id,
-        }),
+    try {
+      if (!currentUser) {
+        await schedulePushNotification(
+          'Error',
+          'You must be logged in to like posts'
+        );
+        return false;
       }
-    );
-    const addData = await addRes.json();
-    console.log(addData)
-    
-    if (addData.success) {
-      loadItems();
-      return true;
+      
+      const addRes = await fetch(
+        `${awsURL}/addLike`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            "ngrok-skip-browser-warning": "69420"
+          },
+          body: JSON.stringify({
+            postId: id,
+          }),
+        }
+      );
+      const addData = await addRes.json();
+      
+      if (addData.success) {
+        loadItems();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      console.log(err);
+      return false;
     }
   };
 
@@ -247,68 +283,108 @@ export const AppProvider = ({ children }) => {
         );
         loadItems();
         return true;
+      } else {
+        return false;
       }
-      } catch (err) {
-
-      }
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
   };
 
   const register = async (username, password) => {
-    const addRes = await fetch(
-      `${awsURL}/register`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          "ngrok-skip-browser-warning": "69420"
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password
-        }),
+    try {
+      if (!username.trim() || !password.trim()) {
+        await schedulePushNotification(
+          'Registration Failed',
+          'Username and password are required'
+        );
+        return false;
       }
-    );
-    const addData = await addRes.json();
-    console.log(addData)
-
-    if (addData.success) {
-      setCurrentUser(username)
-      await AsyncStorage.setItem('currentUser', username);
-      await schedulePushNotification(
-        'Registered',
-        'You have been successfully registered'
+      
+      const addRes = await fetch(
+        `${awsURL}/register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            "ngrok-skip-browser-warning": "69420"
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password
+          }),
+        }
       );
-      loadItems();
-      return true;
+      const addData = await addRes.json();
+
+      if (addData.success) {
+        setCurrentUser(username);
+        await AsyncStorage.setItem('currentUser', username);
+        await schedulePushNotification(
+          'Registered',
+          'You have been successfully registered'
+        );
+        loadItems();
+        return true;
+      } else {
+        await schedulePushNotification(
+          'Registration Failed',
+          addData.message || 'Could not register user'
+        );
+        return false;
+      }
+    } catch (err) {
+      console.log(err);
+      return false;
     }
-  }
+  };
+  
   const login = async (username, password) => {
-    const addRes = await fetch(
-      `${awsURL}/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          "ngrok-skip-browser-warning": "69420"
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password
-        }),
+    try {
+      if (!username.trim() || !password.trim()) {
+        await schedulePushNotification(
+          'Login Failed',
+          'Username and password are required'
+        );
+        return false;
       }
-    );
-    const addData = await addRes.json();
-    console.log(addData)
-
-    if (addData.success) {
-      setCurrentUser(username)
-      await AsyncStorage.setItem('currentUser', username);
-      await schedulePushNotification(
-        'Logged In',
-        'You have been successfully logged in'
+      
+      const addRes = await fetch(
+        `${awsURL}/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            "ngrok-skip-browser-warning": "69420"
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password
+          }),
+        }
       );
-      loadItems();
-      return true;
+      const addData = await addRes.json();
+
+      if (addData.success) {
+        setCurrentUser(username);
+        await AsyncStorage.setItem('currentUser', username);
+        await schedulePushNotification(
+          'Logged In',
+          'You have been successfully logged in'
+        );
+        loadItems();
+        return true;
+      } else {
+        await schedulePushNotification(
+          'Login Failed',
+          addData.message || 'Incorrect username or password'
+        );
+        return false;
+      }
+    } catch (err) {
+      console.log(err);
+      return false;
     }
   };
 
