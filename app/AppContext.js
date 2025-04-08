@@ -7,8 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 export const AppContext = createContext();
 
 //Remember to change this to your ngrok endpoint
-//const awsURL = ''//'http://ec2-100-25-27-37.compute-1.amazonaws.com:3010' //aws endpoint
-const awsURL = 'https://4c4f-2a02-8084-a0a0-2600-29cf-efbc-6462-ebc.ngrok-free.app';
+const awsURL = 'http://ec2-100-25-27-37.compute-1.amazonaws.com:3010' //aws endpoint
 
 let navigationRef = null;
 
