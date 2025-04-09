@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 80, // Add padding to avoid content being hidden by FAB
+    paddingBottom: 80,
   },
   postContainer: {
     backgroundColor: '#ffffff',

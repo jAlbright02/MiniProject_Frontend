@@ -6,7 +6,6 @@ const { v4: uuidv4 } = require('uuid');
 
 export const AppContext = createContext();
 
-//Remember to change this to your ngrok endpoint
 const awsURL = 'http://ec2-100-25-27-37.compute-1.amazonaws.com:3010' //aws endpoint
 
 let navigationRef = null;
@@ -51,15 +50,14 @@ export const AppProvider = ({ children }) => {
       );
       const data = await res.json();
       if (data.posts && Array.isArray(data.posts)) {
-        // Sort posts with newest first
+        //newest post first
         const sortedPosts = data.posts.slice().sort((a, b) => {
           return new Date(b.timestamp) - new Date(a.timestamp);
         });
         
         setPosts(sortedPosts);
         setPostCount(data.posts.length);
-        
-        // Filter posts for current user
+
         if (currentUser) {
           const filteredPosts = sortedPosts.filter(post => post.user === currentUser);
           setUserPosts(filteredPosts);
@@ -74,7 +72,6 @@ export const AppProvider = ({ children }) => {
 
   const deleteItem = async (id) => {
     try {
-      // Check if the current user owns the post
       const postToDelete = posts.find(post => post.postId === id);
       if (postToDelete && postToDelete.user !== currentUser) {
         await schedulePushNotification(
@@ -169,7 +166,6 @@ export const AppProvider = ({ children }) => {
 
   const editPost = async (id, content) => {
     try {
-      // Check if the current user owns the post
       const postToEdit = posts.find(post => post.postId === id);
       if (postToEdit && postToEdit.user !== currentUser) {
         await schedulePushNotification(
@@ -398,7 +394,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Check for stored user on app start
+  //check stored users
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -414,7 +410,7 @@ export const AppProvider = ({ children }) => {
     checkUser();
   }, []);
 
-  // Load posts whenever current user changes
+  //load posts
   useEffect(() => {
     if (currentUser) {
       loadItems();

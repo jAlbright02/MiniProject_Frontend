@@ -17,7 +17,6 @@ const RegisterScreen = ({ navigation }) => {
   const { register } = useContext(AppContext);
 
   const handleRegister = async () => {
-    // Validate inputs
     if (!username.trim()) {
       Alert.alert('Error', 'Username is required');
       return;
@@ -33,7 +32,7 @@ const RegisterScreen = ({ navigation }) => {
       return;
     }
     
-    // All validations passed, proceed with registration
+    //proceed with registration after validation
     const success = await register(username, password);
     if (success) {
       navigation.replace('Home');

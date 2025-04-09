@@ -44,7 +44,7 @@ export const ImgPicker = ({onImagePicked}) => {
     if (!image.canceled) {
       const imageUri = image.assets[0].uri;
       setPickedImage(`${imageUri}`);
-      onImagePicked(`${imageUri}`); // Pass image URI to parent
+      onImagePicked(`${imageUri}`); //pass image URI to parent
       console.log('image filepath: ', `${imageUri}`)
     }
   };

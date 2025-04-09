@@ -19,7 +19,6 @@ const LoginScreen = ({ navigation }) => {
   const { login } = useContext(AppContext);
 
   const handleLogin = async () => {
-    // Validate inputs
     if (!username.trim()) {
       Alert.alert('Error', 'Username is required');
       return;
