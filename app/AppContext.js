@@ -70,6 +70,22 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  async function sendPushNotificationHandler(action) {
+    let resp = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: 'ExponentPushToken[LzVQ-aH4OoEg5GRf-o5a99]',
+        title: `Action: ${action}`,
+        body: `Post that was ${action}`
+      })
+    });
+    resp = await resp.json()
+    console.log('JSON.stringify(resp): ' + JSON.stringify(resp))
+  }
+
   const deleteItem = async (id) => {
     try {
       const postToDelete = posts.find(post => post.postId === id);
@@ -103,6 +119,7 @@ export const AppProvider = ({ children }) => {
           'Post Deleted',
           'Your post has been successfully deleted'
         );
+        sendPushNotificationHandler("Saved")
         loadItems();
         return true;
       } else {
@@ -148,6 +165,7 @@ export const AppProvider = ({ children }) => {
           `Successfully added your post`
         );
         console.log('Post added successfully');
+        sendPushNotificationHandler("Saved")
         loadItems();
         return true;
       } else {
@@ -196,6 +214,7 @@ export const AppProvider = ({ children }) => {
           'Post Updated',
           'Your post has been updated successfully'
         );
+        sendPushNotificationHandler("Updated")
         loadItems();
         return true;
       } else {
@@ -426,6 +445,7 @@ export const AppProvider = ({ children }) => {
       addItem,
       editPost,
       likePost,
+      sendPushNotificationHandler,
       addComment,
       currentUser,
       login,
