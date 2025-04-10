@@ -131,7 +131,8 @@ const HomeScreen = ({ navigation }) => {
                 )}
               </View>
               
-              <Text style={styles.postContent}>{item.content}</Text>
+              <Text style={styles.postContent}>Date: {item.timestamp.slice(0, 10)}</Text>
+              <Text style={styles.postContent}>Caption: {item.content}</Text>
               
               {item.image && item.image.length > 0 && item.image[0] && (
                 <Image 

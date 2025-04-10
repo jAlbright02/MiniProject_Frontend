@@ -10,12 +10,6 @@ export const ImgPicker = ({onImagePicked}) => {
     try {
       const result = await ImagePicker.requestCameraPermissionsAsync()
       console.log('verifyPermissions result ' + JSON.stringify(result))
-      //  const result = await Permissions.askAsync( Permissions.CAMERA_ROLL, Permissions.CAMERA)
-      //  let succss = false
-      //  if (result.status == 'granted') succss = true
-      // if(result.permissions )
-      //  if(result.permissions.camera.status == 'granted') succss = true
-      //  if (result.status !== 'granted') {
       if (result.granted != true) {
         Alert.alert(
           'Insufficient permissions!',
